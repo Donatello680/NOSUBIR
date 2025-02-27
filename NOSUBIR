@@ -1,0 +1,147 @@
+import javax.swing.JOptionPane;
+
+// Clase Factura
+class Factura {
+    private String nombreCliente;
+    private String cedulaCliente;
+    private String codigoFactura;
+    private double monto;
+    private int mes;
+    private int electricos, automotrices, construccion;
+    
+    public Factura(String nombreCliente, String cedulaCliente, String codigoFactura, double monto, int mes, int electricos, int automotrices, int construccion) {
+        this.nombreCliente = nombreCliente;
+        this.cedulaCliente = cedulaCliente;
+        this.codigoFactura = codigoFactura;
+        this.monto = monto;
+        this.mes = mes;
+        this.electricos = electricos;
+        this.automotrices = automotrices;
+        this.construccion = construccion;
+    }
+    
+    public double calcularComision() {
+        double bono = 0;
+        if (electricos >= 3) {
+            bono += monto * 0.04;
+        } else {
+            bono += monto * 0.02;
+        }
+        if (automotrices > 4) {
+            bono += monto * 0.04;
+        } else {
+            bono += monto * 0.02;
+        }
+        if (construccion > 0) {
+            bono += monto * 0.08;
+        }
+        if (electricos > 0 && automotrices > 0 && construccion > 0) {
+            bono = monto * 0.10;
+        }
+        if (monto > 50000) {
+            bono += monto * 0.05;
+        }
+        return bono;
+    }
+    
+    public int calcularPuntos() {
+        int puntos = 0;
+        if (electricos >= 3) {
+            puntos += 1;
+        }
+        if (automotrices > 4) {
+            puntos += 1;
+        }
+        if (construccion > 0) {
+            puntos += 2;
+        }
+        if (monto > 50000) {
+            puntos += 1;
+        }
+        if (electricos > 0 && automotrices > 0 && construccion > 0) {
+            puntos = 3;
+        }
+        return puntos;
+    }
+    
+    public double getMonto() {
+        return monto;
+    }
+}
+
+// Clase Vendedor
+class Vendedor {
+    private String nombre;
+    private String cedula;
+    private String codigo;
+    private String sucursal;
+    private boolean tieneVehiculo;
+    private double totalVentas;
+    private double comisiones;
+    private int puntos;
+    
+    public Vendedor(String nombre, String cedula, String codigo, String sucursal, boolean tieneVehiculo) {
+        this.nombre = nombre;
+        this.cedula = cedula;
+        this.codigo = codigo;
+        this.sucursal = sucursal;
+        this.tieneVehiculo = tieneVehiculo;
+    }
+    
+    public void procesarFactura(Factura factura) {
+        totalVentas += factura.getMonto();
+        comisiones += factura.calcularComision();
+        puntos += factura.calcularPuntos();
+    }
+    
+    public void calcularBonoExtra() {
+        if (totalVentas > 300000) {
+            comisiones += 20000;
+        }
+    }
+    
+    public void mostrarResultados() {
+        JOptionPane.showMessageDialog(null, "Vendedor: " + nombre +
+                "\nCódigo: " + codigo +
+                "\nTotal Ventas: " + totalVentas +
+                "\nComisiones: " + comisiones +
+                "\nPuntos: " + puntos +
+                "\nVehículo Propio: " + (tieneVehiculo ? "Sí" : "No") +
+                "\nSucursal: " + sucursal);
+    }
+}
+
+// Clase Principal
+public class SistemaFacturacion {
+    public static void main(String[] args) {
+        String nombre = JOptionPane.showInputDialog("Ingrese nombre del vendedor:");
+        String cedula = JOptionPane.showInputDialog("Ingrese cédula del vendedor:");
+        String codigo = JOptionPane.showInputDialog("Ingrese código del vendedor:");
+        String sucursal = JOptionPane.showInputDialog("Ingrese sucursal:");
+        int tieneVehiculo = JOptionPane.showConfirmDialog(null, "¿Tiene vehículo propio?", "Vehículo", JOptionPane.YES_NO_OPTION);
+        Vendedor vendedor = new Vendedor(nombre, cedula, codigo, sucursal, tieneVehiculo == JOptionPane.YES_OPTION);
+        
+        boolean continuar = true;
+        while (continuar) {
+            String nombreCliente = JOptionPane.showInputDialog("Ingrese nombre del cliente:");
+            String cedulaCliente = JOptionPane.showInputDialog("Ingrese cédula del cliente:");
+            String codigoFactura = JOptionPane.showInputDialog("Ingrese código de la factura:");
+            double monto = Double.parseDouble(JOptionPane.showInputDialog("Ingrese monto de la factura:"));
+            int mes = Integer.parseInt(JOptionPane.showInputDialog("Ingrese número del mes (1-12):"));
+            int electricos = Integer.parseInt(JOptionPane.showInputDialog("Cantidad de productos eléctricos:"));
+            int automotrices = Integer.parseInt(JOptionPane.showInputDialog("Cantidad de productos automotrices:"));
+            int construccion = Integer.parseInt(JOptionPane.showInputDialog("Cantidad de productos de construcción:"));
+            
+            Factura factura = new Factura(nombreCliente, cedulaCliente, codigoFactura, monto, mes, electricos, automotrices, construccion);
+            vendedor.procesarFactura(factura);
+            
+            int respuesta = JOptionPane.showConfirmDialog(null, "¿Desea ingresar otra factura?", "Continuar", JOptionPane.YES_NO_OPTION);
+            if (respuesta != JOptionPane.YES_OPTION) {
+                continuar = false;
+            }
+        }
+        
+        vendedor.calcularBonoExtra();
+        vendedor.mostrarResultados();
+    }
+}
